@@ -1,17 +1,17 @@
 <?php
 /**
- * Template Name: Lomnhao Store Payment Page (Inline Edit)
+ * Template Name: LOMNHAO STORE Payment Custom Edit
  */
 
 // จัดการการบันทึกข้อมูลเมื่อแอดมินกด Save
 if (is_user_logged_in() && current_user_can('administrator') && $_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['inline_edit_nonce'])) {
     if (wp_verify_nonce($_POST['inline_edit_nonce'], 'inline_edit_action')) {
-        update_option('store_name_opt', sanitize_text_field($_POST['store_name']));
-        update_option('store_acc_name_opt', sanitize_text_field($_POST['account_name']));
-        update_option('store_kbank_num_opt', sanitize_text_field($_POST['kbank_number']));
-        update_option('store_true_num_opt', sanitize_text_field($_POST['truemoney_number']));
+        update_option('lomnhao_store_name', sanitize_text_field($_POST['store_name']));
+        update_option('lomnhao_acc_name', sanitize_text_field($_POST['account_name']));
+        update_option('lomnhao_kbank_num', sanitize_text_field($_POST['kbank_number']));
+        update_option('lomnhao_true_num', sanitize_text_field($_POST['truemoney_number']));
         
-        // จัดการอัปโหลดรูป QR Code หากมีการเลือกรูปใหม่
+        // จัดการอัปโหลดรูป QR Code ใหม่
         if (!empty($_FILES['qr_code_file']['name'])) {
             require_once(ABSPATH . 'wp-admin/includes/file.php');
             require_once(ABSPATH . 'wp-admin/includes/media.php');
@@ -19,7 +19,7 @@ if (is_user_logged_in() && current_user_can('administrator') && $_SERVER['REQUES
             
             $attachment_id = media_handle_upload('qr_code_file', 0);
             if (!is_wp_error($attachment_id)) {
-                update_option('store_qr_img_opt', wp_get_attachment_url($attachment_id));
+                update_option('lomnhao_qr_img', wp_get_attachment_url($attachment_id));
             }
         }
         
@@ -28,15 +28,15 @@ if (is_user_logged_in() && current_user_can('administrator') && $_SERVER['REQUES
     }
 }
 
-// ดึงข้อมูลปัจจุบัน (ถ้ายังไม่มีให้ใช้ค่าเริ่มต้น)
-$store_name = get_option('store_name_opt', 'LOMNHAO STORE');
-$acc_name   = get_option('store_acc_name_opt', 'อนงค์นุช เพชรสังฆาตร');
-$kbank_num  = get_option('store_kbank_num_opt', '165-374-8740');
-$true_num   = get_option('store_true_num_opt', '096-793-6500');
-$qr_img     = get_option('store_qr_img_opt', 'https://lh3.googleusercontent.com/d/155kUPPmAU4hdhz9V2V7Ny1ps1HbgRmd0=s1000');
+// ดึงข้อมูลจากฐานข้อมูล (ถ้ายังไม่มี ให้ใช้ค่าเริ่มต้นเดิมของคุณ)
+$store_name = get_option('lomnhao_store_name', 'LOMNHAO STORE');
+$acc_name   = get_option('lomnhao_acc_name', 'อนงค์นุช เพชรสังฆาตร');
+$kbank_num  = get_option('lomnhao_kbank_num', '165-374-8740');
+$true_num   = get_option('lomnhao_true_num', '096-793-6500');
+$qr_img     = get_option('lomnhao_qr_img', 'https://lh3.googleusercontent.com/d/155kUPPmAU4hdhz9V2V7Ny1ps1HbgRmd0=s1000');
 
 $is_admin = (is_user_logged_in() && current_user_can('administrator'));
-get_header(); 
+get_header();
 ?>
 <!DOCTYPE html>
 <html lang="th">
@@ -49,7 +49,11 @@ get_header();
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        body { font-family: 'Prompt', sans-serif; background: linear-gradient(135deg, #FCF4E0 0%, #FFECB0 100%); min-height: 100vh; }
+        body {
+            font-family: 'Prompt', sans-serif;
+            background: linear-gradient(135deg, #FCF4E0 0%, #FFECB0 100%);
+            min-height: 100vh;
+        }
         @keyframes float-up-down { 0%, 100% { transform: translateY(0px) rotate(0deg); } 50% { transform: translateY(-15px) rotate(10deg); } }
         @keyframes float-left-right { 0%, 100% { transform: translateX(0px) rotate(0deg); } 50% { transform: translateX(15px) rotate(-10deg); } }
         @keyframes pulse-soft { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
@@ -62,125 +66,181 @@ get_header();
         .anim-float-4 { animation: float-left-right 4.5s ease-in-out infinite 2s; }
         .anim-pulse { animation: pulse-soft 3s ease-in-out infinite; }
         .anim-spin { animation: spin-slow 8s linear infinite; }
-        .glass-card { background: rgba(255, 255, 255, 0.82); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid #FFECB0; box-shadow: 0 20px 50px -10px rgba(250, 226, 141, 0.35), inset 0 2px 10px rgba(255, 255, 255, 0.9); }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.82);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid #FFECB0;
+            box-shadow: 0 20px 50px -10px rgba(250, 226, 141, 0.35), inset 0 2px 10px rgba(255, 255, 255, 0.9);
+        }
         .virtual-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         .virtual-card:hover { transform: translateY(-4px); }
         ::-webkit-scrollbar { width: 0px; }
     </style>
+    
     <script>
         tailwind.config = {
-            theme: { extend: { colors: { cream: { 50: '#FCF4E0', 100: '#FFECB0', 200: '#FAE28D' }, amber: { 300: '#FAE28D', 400: '#FFECB0', 500: '#d99b00', 600: '#b87d00', 700: '#8f5f00' } } } }
+            theme: {
+                extend: {
+                    colors: {
+                        cream: { 50: '#FCF4E0', 100: '#FFECB0', 200: '#FAE28D' },
+                        amber: { 300: '#FAE28D', 400: '#FFECB0', 500: '#d99b00', 600: '#b87d00', 700: '#8f5f00' }
+                    }
+                }
+            }
         }
     </script>
 </head>
 <body class="flex flex-col items-center py-6 px-4 text-amber-700 relative overflow-x-hidden">
 
-    <!-- แถบเมนูด้านบนเฉพาะแอดมิน -->
+    <!-- ปุ่มเปิดโหมดแก้ไขสำหรับแอดมินที่เข้าสู่ระบบแล้วเท่านั้น -->
     <?php if ($is_admin): ?>
     <div class="fixed top-4 right-4 z-50 flex items-center gap-2">
         <button type="button" id="toggleEditBtn" onclick="toggleEditMode()" class="bg-[#8f5f00] text-white px-4 py-2 rounded-full shadow-lg font-bold text-sm flex items-center gap-1.5 hover:bg-[#b87d00] transition">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
-            แก้ไขข้อมูลหน้าเว็บ
+            แก้ไขหน้าเว็บ
         </button>
         <a href="<?php echo wp_logout_url(home_url()); ?>" class="bg-red-600 text-white px-3 py-2 rounded-full shadow-lg text-xs font-bold hover:bg-red-700 transition">ออก</a>
     </div>
     <?php endif; ?>
 
-    <!-- ฟอร์มห่อหุ้มหน้าเว็บทั้งหมด (จะส่งค่าเมื่อกดบันทึก) -->
-    <form method="POST" enctype="multipart/form-data" id="mainPaymentForm" class="max-w-[420px] w-full relative z-10 space-y-5 pb-10">
-        <?php wp_nonce_field('inline_edit_action', 'inline_edit_nonce'); ?>
+    <!-- Background Decorative SVGs -->
+    <div class="fixed inset-0 pointer-events-none overflow-hidden z-0">
+        <svg class="absolute top-[5%] left-[10%] w-8 h-8 text-[#FAE28D] anim-float-1" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+        <svg class="absolute top-[15%] left-[2%] w-6 h-6 text-[#FFECB0] anim-pulse" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    </div>
 
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-8 left-1/2 transform -translate-x-1/2 bg-[#8f5f00]/95 backdrop-blur-sm text-[#FCF4E0] px-6 py-3 rounded-full shadow-xl transition-all duration-300 opacity-0 translate-y-4 pointer-events-none z-50 flex items-center gap-2 font-medium text-sm border border-[#FAE28D]">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" class="w-5 h-5 text-[#FAE28D]">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        คัดลอกเลขบัญชีแล้ว
+    </div>
+
+    <!-- ฟอร์มห่อหุ้มหน้าเว็บทั้งหมด เพื่อให้แอดมินกดบันทึกค่าได้ -->
+    <form method="POST" enctype="multipart/form-data" class="max-w-[420px] w-full relative z-10 space-y-5 pb-10">
+        <?php wp_nonce_field('inline_edit_action', 'inline_edit_nonce'); ?>
+        
         <!-- Header -->
         <div class="text-center pt-2 pb-2 relative">
             <h1 class="text-2xl font-bold tracking-tight text-[#8f5f00] flex items-center justify-center gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-[#FAE28D] anim-pulse"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
+                
                 <span class="view-mode"><?php echo esc_html($store_name); ?></span>
-                <input type="text" name="store_name" value="<?php echo esc_attr($store_name); ?>" class="edit-mode hidden text-center border-2 border-[#8f5f00] rounded-lg px-2 py-1 text-xl w-full max-w-[250px]" required>
+                <input type="text" name="store_name" value="<?php echo esc_attr($store_name); ?>" class="edit-mode hidden text-center border-2 border-[#8f5f00] rounded-lg px-2 py-1 text-xl w-full max-w-[200px]" required>
+
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-6 h-6 text-[#FAE28D] anim-pulse"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>
             </h1>
             <p class="text-sm font-medium text-[#b87d00] mt-1">Payment & Checkout</p>
         </div>
 
+        <!-- การ์ด Glassmorphism -->
         <div class="glass-card rounded-[40px] p-3 relative z-10">
             
-            <!-- QR Code Section -->
+            <!-- รูปภาพ QR Code -->
             <div class="relative p-2 rounded-[36px] z-10">
-                <div class="rounded-[28px] overflow-hidden relative shadow-sm border-[4px] border-white bg-white text-center">
-                    <img src="<?php echo esc_url($qr_img); ?>" alt="QR Code" class="w-full h-auto object-cover" id="qrPreview">
-                    <!-- ปุ่มเปลี่ยนรูป QR เฉพาะตอนเปิดโหมดแก้ไข -->
+                <svg class="absolute inset-0 w-full h-full pointer-events-none" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="2" y="2" width="calc(100% - 4px)" height="calc(100% - 4px)" rx="34" fill="none" stroke="#FAE28D" stroke-width="2.5" stroke-dasharray="12 12" stroke-linecap="round" class="animate-dash" />
+                </svg>
+                <div class="rounded-[28px] overflow-hidden relative shadow-sm border-[4px] border-white bg-white">
+                    <img src="<?php echo esc_url($qr_img); ?>" alt="Payment QR" class="w-full h-auto object-cover" id="qrPreview">
+                    
+                    <!-- ส่วนเลือกอัปโหลดรูปเฉพาะตอนเปิดโหมดแก้ไข -->
                     <div class="edit-mode hidden absolute inset-0 bg-black/50 flex items-center justify-center p-4">
-                        <label class="bg-white text-[#8f5f00] px-4 py-2 rounded-xl font-bold text-xs cursor-pointer shadow-lg hover:bg-[#FFECB0]">
-                            เปลี่ยนรูป QR Code
+                        <label class="bg-white text-[#8f5f00] px-4 py-2.5 rounded-xl font-bold text-xs cursor-pointer shadow-lg hover:bg-[#FFECB0] text-center">
+                            📁 เปลี่ยนรูป QR Code
                             <input type="file" name="qr_code_file" accept="image/*" class="hidden" onchange="previewQR(this)">
                         </label>
                     </div>
                 </div>
             </div>
 
+            <!-- โซนข้อความ -->
             <div class="p-4 pt-6 space-y-5">
-                
                 <div class="text-center space-y-3">
                     <p class="text-[15px] font-medium leading-relaxed text-[#8f5f00]">
                         เลขบัญชีตามนี้เลยค่า<br>ชื่อบัญชี 
                         <span class="text-[#8f5f00] font-bold bg-[#FCF4E0] px-2.5 py-0.5 rounded-lg border border-[#FFECB0] relative inline-block">
                             <span class="view-mode"><?php echo esc_html($acc_name); ?></span>
-                            <input type="text" name="account_name" value="<?php echo esc_attr($acc_name); ?>" class="edit-mode hidden border border-[#8f5f00] rounded px-1 text-sm w-36">
+                            <input type="text" name="account_name" value="<?php echo esc_attr($acc_name); ?>" class="edit-mode hidden border border-[#8f5f00] rounded px-1 text-sm w-40 bg-white">
                         </span> เท่านั้นน้า!!
                     </p>
                 </div>
 
+                <!-- โซนบัญชีธนาคาร -->
                 <div class="space-y-4">
                     
-                    <!-- บัตร KBank -->
-                    <div class="virtual-card relative bg-gradient-to-br from-[#FAE28D] to-[#FFECB0] rounded-[24px] p-5 shadow-lg overflow-hidden border border-[#FFECB0]">
+                    <!-- บัตรกสิกรไทย -->
+                    <div class="virtual-card relative bg-gradient-to-br from-[#FAE28D] to-[#FFECB0] rounded-[24px] p-5 shadow-lg overflow-hidden border border-[#FFECB0] cursor-pointer" onclick="copyText('<?php echo esc_js($kbank_num); ?>', this, 'kbank')">
                         <div class="relative z-10 flex flex-col gap-4">
                             <div class="flex justify-between items-center">
-                                <span class="text-[#8f5f00] font-bold text-sm">KBank</span>
+                                <span class="text-[#8f5f00] font-bold text-sm tracking-wider">KBank</span>
+                                <button type="button" class="kbank-btn bg-white text-[#8f5f00] text-[12px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 shadow-sm pointer-events-none">
+                                    คัดลอก
+                                </button>
                             </div>
                             <div class="mt-2">
                                 <div class="text-[#8f5f00]/90 text-[11px] font-medium mb-1">กสิกรไทย</div>
                                 <div class="text-[#8f5f00] font-bold text-[22px] tracking-widest leading-none view-mode"><?php echo esc_html($kbank_num); ?></div>
-                                <input type="text" name="kbank_number" value="<?php echo esc_attr($kbank_num); ?>" class="edit-mode hidden border border-[#8f5f00] rounded px-2 py-1 text-lg w-full bg-white">
+                                <div class="edit-mode hidden" onclick="event.stopPropagation();">
+                                    <input type="text" name="kbank_number" value="<?php echo esc_attr($kbank_num); ?>" class="border border-[#8f5f00] rounded px-2 py-1 text-lg w-full bg-white" required>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- บัตร TrueMoney -->
-                    <div class="virtual-card relative bg-gradient-to-br from-[#FCF4E0] to-[#FFECB0] rounded-[24px] p-5 shadow-lg overflow-hidden border border-[#FAE28D]">
+                    <div class="virtual-card relative bg-gradient-to-br from-[#FCF4E0] to-[#FFECB0] rounded-[24px] p-5 shadow-lg overflow-hidden border border-[#FAE28D] cursor-pointer" onclick="copyText('<?php echo esc_js($true_num); ?>', this, 'true')">
                         <div class="relative z-10 flex flex-col gap-4">
                             <div class="flex justify-between items-center">
-                                <span class="text-[#8f5f00] font-bold text-sm">TrueMoney</span>
+                                <span class="text-[#8f5f00] font-bold text-sm tracking-wider">TrueMoney</span>
+                                <button type="button" class="true-btn bg-white text-[#8f5f00] text-[12px] font-bold px-4 py-2 rounded-full flex items-center gap-1.5 shadow-sm pointer-events-none">
+                                    คัดลอก
+                                </button>
                             </div>
                             <div class="mt-2">
                                 <div class="text-[#8f5f00]/90 text-[11px] font-medium mb-1">ทรูมันนี่</div>
                                 <div class="text-[#8f5f00] font-bold text-[22px] tracking-widest leading-none view-mode"><?php echo esc_html($true_num); ?></div>
-                                <input type="text" name="truemoney_number" value="<?php echo esc_attr($true_num); ?>" class="edit-mode hidden border border-[#8f5f00] rounded px-2 py-1 text-lg w-full bg-white">
+                                <div class="edit-mode hidden" onclick="event.stopPropagation();">
+                                    <input type="text" name="truemoney_number" value="<?php echo esc_attr($true_num); ?>" class="border border-[#8f5f00] rounded px-2 py-1 text-lg w-full bg-white" required>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                </div>
+                    <!-- ปุ่มบันทึกการเปลี่ยนแปลง (แสดงเฉพาะตอนเปิดโหมดแก้ไข) -->
+                    <div id="saveActions" class="edit-mode hidden pt-2 space-y-2">
+                        <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-green-700 transition">
+                            💾 บันทึกข้อมูลทันที
+                        </button>
+                        <button type="button" onclick="toggleEditMode()" class="w-full bg-gray-300 text-gray-700 font-bold py-2 rounded-2xl text-sm hover:bg-gray-400 transition">
+                            ยกเลิก
+                        </button>
+                    </div>
 
-                <!-- ปุ่มบันทึกการเปลี่ยนแปลง (ซ่อนไว้จนกว่าจะกดแก้ไข) -->
-                <div id="saveActions" class="edit-mode hidden pt-2 space-y-2">
-                    <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 rounded-2xl shadow-lg hover:bg-green-700 transition">
-                        💾 บันทึกข้อมูลทันที
-                    </button>
-                    <button type="button" onclick="toggleEditMode()" class="w-full bg-gray-300 text-gray-700 font-bold py-2 rounded-2xl text-sm hover:bg-gray-400 transition">
-                        ยกเลิก
-                    </button>
-                </div>
+                    <!-- กล่องเตือนต่างๆ (คงดีไซน์เดิมของคุณไว้ครบถ้วน) -->
+                    <div class="bg-gradient-to-br from-[#FFECB0]/80 to-[#FCF4E0]/90 rounded-[20px] p-3.5 border-2 border-dashed border-[#FAE28D] shadow-sm z-10 mt-1">
+                        <div class="text-[11.5px] text-[#8f5f00] leading-relaxed text-left">
+                            <span class="inline-block bg-[#8f5f00] text-white text-[9px] font-bold px-2 py-0.5 rounded-full mb-1.5 tracking-wider">สำคัญ</span><br>
+                            <span class="font-bold text-[#b87d00] text-[12.5px]">เฉพาะคนโอน Wallet</span> รบกวนบวกเพิ่ม <span class="bg-white px-1.5 py-0.5 rounded-md text-[#8f5f00] font-bold border border-[#FFECB0]">+1 บาท</span> นะคะ
+                        </div>
+                    </div>
 
+                    <div class="bg-[#FCF4E0] border border-[#FFECB0] rounded-2xl p-3 text-left text-[13px] text-[#8f5f00] font-medium">
+                        โอนผิด โอนใหม่ ไม่โอนคืนนะคะ! รบกวนเช็คชื่อและเลขบัญชีให้ดีก่อนโอนน้า
+                    </div>
+
+                </div>
             </div>
         </div>
     </form>
 
     <script>
         function toggleEditMode() {
-            const viewElements = document.querySelectorAll('.view-mode');
-            const editElements = document.querySelectorAll('.edit-mode');
+            document.querySelectorAll('.view-mode').forEach(el => el.classList.toggle('hidden'));
+            document.querySelectorAll('.edit-mode').forEach(el => el.classList.toggle('hidden'));
             const toggleBtn = document.getElementById('toggleEditBtn');
-
-            viewElements.forEach(el => el.classList.toggle('hidden'));
-            editElements.forEach(el => el.classList.toggle('hidden'));
             if(toggleBtn) toggleBtn.classList.toggle('hidden');
         }
 
@@ -193,7 +253,41 @@ get_header();
                 reader.readAsDataURL(input.files[0]);
             }
         }
+
+        function copyText(text, containerElement, type) {
+            // ป้องกันการทำงานตอนอยู่ในโหมดแก้ไข
+            if(!document.querySelector('.edit-mode').classList.contains('hidden')) return;
+
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+
+            try {
+                document.execCommand('copy');
+                showToast();
+                const buttonElement = containerElement.querySelector(type === 'kbank' ? '.kbank-btn' : '.true-btn');
+                const originalHtml = buttonElement.innerHTML;
+                buttonElement.innerHTML = `สำเร็จ`;
+                setTimeout(() => { buttonElement.innerHTML = originalHtml; }, 2000);
+            } catch (err) {
+                console.error('คัดลอกไม่สำเร็จ', err);
+            }
+            document.body.removeChild(textArea);
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0', 'translate-y-4');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', 'translate-y-4');
+            }, 2500);
+        }
     </script>
 </body>
 </html>
-<?php get_footer(); ?>
+<?php get_header(); ?>
